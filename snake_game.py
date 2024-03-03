@@ -10,11 +10,14 @@ food_pos = {'x': 280, 'y': 280}
 
 grid_size = 20
 
+#score = 0
+
 class Snake:
-    def __init__(self, snake_pos, x_dir, y_dir):
+    def __init__(self, snake_pos, x_dir, y_dir, score):
         self.snake_pos = snake_pos
         self.x_dir = x_dir
         self.y_dir = y_dir
+        self.score = score
 
     def move(self):
         # Snake Move
@@ -37,28 +40,32 @@ class Snake:
         if self.snake_pos[0] in self.snake_pos[1:]:
             sys.exit()
     
-    def eat(self, food_pos):
+    def eat(self, food_pos, score):
         if self.snake_pos[0]['x'] == food_pos['x'] and self.snake_pos[0]['y'] == food_pos['y']:
             self.snake_pos.append({'x': self.snake_pos[-1]['x'], 'y': self.snake_pos[-1]['y']})
+            self.score += 1
+            print(self.score)
             food_spawn()
+            return self.score
 
-    def update(self, food_pos):
+    def update(self, food_pos, score):
         self.move()
         self.wrapping()
         self.collision()
-        self.eat(food_pos)
+        self.eat(food_pos, score)
     
         
 
 def main():
     global screen
+    score = 0
     #Pygame Setup
     pygame.init()
     screen = pygame.display.set_mode((600, 600))
     pygame.display.set_caption('Snake Game')
     #food_spawn()
 
-    snake = Snake(snake_pos,20,0)
+    snake = Snake(snake_pos,20,0, 0)
     
 
     # Game Loop
@@ -71,11 +78,17 @@ def main():
             # Check for key presses
             if event.type == pygame.KEYDOWN:
                 key_press(event, snake)
+
+            if snake.score == 20:
+                print("You win!")
+                pygame.quit()
+                sys.exit()
         
-        snake.update(food_pos)
+        snake.update(food_pos, score)
+
 
         # Draw
-        draw()
+        draw(snake.score)
 
         # Update
         pygame.display.update()
@@ -108,7 +121,7 @@ def food_spawn():
 
         
 
-def draw():
+def draw(score):
     # Draw Background
     screen.fill((0, 0, 0))
 
@@ -124,6 +137,11 @@ def draw():
         for y in range(30):
             rect = pygame.Rect(x*grid_size, y*grid_size, grid_size, grid_size)
             pygame.draw.rect(screen, (5, 5, 5), rect, 1)
+
+    # Draw Score
+    font = pygame.font.Font(None, 36)
+    text = font.render(f"Score: {score}", True, (255, 255, 255))
+    screen.blit(text, (10, 10))
 
 if __name__ == "__main__":
     main()
